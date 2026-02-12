@@ -38,12 +38,26 @@
 
 ```bash
 # 全量构建（跳过测试）
-mvn clean install -DskipTests
+mvn clean package -DskipTests
 
 # 运行测试
 mvn test
 
-# 启动应用（local 配置）
+# 使用 java -jar 启动（推荐）
+# 1. 先构建：mvn clean package -DskipTests
+# 2. 启动服务，日志输出到 /tmp/awsome-shop/auth/
+mkdir -p /tmp/awsome-shop/auth
+java -jar bootstrap/target/awsome-shop-auth-service-1.0.0-SNAPSHOT.jar \
+  --spring.profiles.active=local \
+  > /tmp/awsome-shop/auth/startup.log 2>&1 &
+
+# 查看启动日志
+tail -f /tmp/awsome-shop/auth/startup.log
+
+# 停止服务
+kill $(lsof -t -i:8001)
+
+# 启动应用（Maven 方式，开发调试用）
 mvn spring-boot:run -pl bootstrap
 
 # 使用指定配置启动
