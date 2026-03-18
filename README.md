@@ -1,38 +1,53 @@
 # Awsome Shop Auth Service
 
-基于领域驱动设计（DDD）+ 六边形架构的商品服务。
+用户认证与管理服务 — AWSomeShop 平台的认证中心。
 
-- **Java 21** / **Spring Boot 3.4.1** / **MyBatis-Plus 3.5.7**
-- 多模块 Maven 项目，26 个子模块
-- Flyway 数据库迁移 / Redis 缓存 / SQS 消息队列 / JWT 安全
+- **Java 21** / **Spring Boot 3.4.1** / **Spring MVC (Servlet)**
+- DDD + 六边形架构，26 个 Maven 子模块
+- JWT (HS256/JJWT) + bcrypt 密码加密
+- MyBatis-Plus 3.5.7 / Flyway / Redis
+
+---
+
+## 核心功能
+
+| 功能 | 端点 | Scope |
+|------|------|-------|
+| 用户注册 | `POST /api/v1/public/auth/register` | public |
+| 用户登录 | `POST /api/v1/public/auth/login` | public |
+| Token 验证 | `POST /api/v1/internal/auth/validate` | internal |
+| 当前用户 | `POST /api/v1/private/user/current` | private |
+| 用户列表 | `POST /api/v1/admin/user/list` | admin |
+| 用户详情 | `POST /api/v1/admin/user/get` | admin |
+| 更新用户 | `POST /api/v1/admin/user/update` | admin |
 
 ---
 
 ## 模块结构
 
 ```
-shop-auth-service/
-├── common/                          # 公共基础（异常、错误码、Result）
+awsome-shop-auth-service/
+├── common/                          # 异常、错误码、Result
 ├── domain/
-│   ├── domain-model/                # 领域实体
-│   ├── domain-api/                  # 领域服务接口
+│   ├── domain-model/                # UserEntity, Role, UserStatus
+│   ├── domain-api/                  # AuthDomainService, UserDomainService
 │   ├── domain-impl/                 # 领域服务实现
-│   ├── repository-api/              # 仓储接口（Port）
-│   ├── cache-api/                   # 缓存接口（Port）
-│   ├── mq-api/                      # 消息队列接口（Port）
-│   └── security-api/                # 安全接口（Port）
+│   ├── repository-api/              # UserRepository (Port)
+│   ├── security-api/                # JwtService, PasswordService (Port)
+│   ├── cache-api/                   # 缓存接口 (Port)
+│   └── mq-api/                      # 消息队列接口 (Port)
 ├── infrastructure/
-│   ├── repository/mysql-impl/       # 仓储实现（Adapter）
-│   ├── cache/redis-impl/            # 缓存实现（Adapter）
-│   ├── mq/sqs-impl/                 # 消息队列实现（Adapter）
-│   └── security/jwt-impl/           # 安全实现（Adapter）
+│   ├── repository/mysql-impl/       # UserPO, UserMapper, UserRepositoryImpl
+│   ├── cache/redis-impl/            # Redis 配置
+│   ├── mq/sqs-impl/                 # SQS 配置
+│   └── security/jwt-impl/           # JwtServiceImpl, BcryptPasswordServiceImpl
 ├── application/
-│   ├── application-api/             # 应用服务接口 + DTO
+│   ├── application-api/             # DTO + AuthAppService, UserAppService
 │   └── application-impl/            # 应用服务实现
 ├── interface/
-│   ├── interface-http/              # HTTP 控制器
+│   ├── interface-http/              # AuthController, UserController
 │   └── interface-consumer/          # 消息消费者
-└── bootstrap/                       # Spring Boot 启动 + 配置
+└── bootstrap/                       # Spring Boot 启动 + Flyway 迁移
 ```
 
 ---
@@ -41,102 +56,26 @@ shop-auth-service/
 
 ![DDD Architecture Maven Module Dependency](docs/DDD%20Architecture%20Maven%20Module%20Dependency.svg)
 
-### 一、调用依赖（接口调用方向）
-
-> 表示运行时的方法调用关系，箭头方向为"调用 → 被调用"。
+### 调用依赖
 
 ```mermaid
 graph TD
-    HTTP[interface-http]
-    Consumer[interface-consumer]
-    AppImpl[application-impl]
-    DomainImpl[domain-impl]
-    AppAPI[application-api]
-    DomainAPI[domain-api]
-    SecurityAPI[security-api]
-    RepoAPI[repository-api]
-    CacheAPI[cache-api]
-    MqAPI[mq-api]
-
-    HTTP -->|调用| AppAPI
-    Consumer -->|调用| AppAPI
-    AppImpl -->|调用| DomainAPI
-    DomainImpl -->|调用| RepoAPI
-    DomainImpl -->|调用| CacheAPI
-    DomainImpl -->|调用| MqAPI
-    DomainImpl -->|调用| SecurityAPI
+    HTTP[interface-http] -->|调用| AppAPI[application-api]
+    AppImpl[application-impl] -->|调用| DomainAPI[domain-api]
+    DomainImpl[domain-impl] -->|调用| RepoAPI[repository-api]
+    DomainImpl -->|调用| SecurityAPI[security-api]
+    DomainImpl -->|调用| CacheAPI[cache-api]
 ```
 
-### 二、实现依赖（接口实现关系）
-
-> 表示接口 ↔ 实现的关系，箭头方向为"实现类 → 接口"。
+### 实现依赖
 
 ```mermaid
 graph LR
-    subgraph 接口
-        AppAPI[application-api]
-        DomainAPI[domain-api]
-        RepoAPI[repository-api]
-        CacheAPI[cache-api]
-        MqAPI[mq-api]
-        SecurityAPI[security-api]
-    end
-
-    subgraph 实现
-        AppImpl[application-impl]
-        DomainImpl[domain-impl]
-        MySQL[mysql-impl]
-        Redis[redis-impl]
-        SQS[sqs-impl]
-        JWT[jwt-impl]
-    end
-
-    AppImpl -.->|implements| AppAPI
-    DomainImpl -.->|implements| DomainAPI
-    MySQL -.->|implements| RepoAPI
-    Redis -.->|implements| CacheAPI
-    SQS -.->|implements| MqAPI
-    JWT -.->|implements| SecurityAPI
-```
-
-### 三、打包依赖（Maven 模块聚合）
-
-> bootstrap 模块负责最终打包，汇聚所有模块为一个可运行的 Spring Boot JAR。
-
-```mermaid
-graph TD
-    Bootstrap[bootstrap<br/>Spring Boot JAR]
-
-    subgraph 接口层
-        HTTP[interface-http]
-        Consumer[interface-consumer]
-    end
-
-    subgraph 应用层
-        AppImpl[application-impl]
-    end
-
-    subgraph 领域层
-        DomainImpl[domain-impl]
-    end
-
-    subgraph 基础设施层
-        MySQL[mysql-impl]
-        Redis[redis-impl]
-        SQS[sqs-impl]
-        JWT[jwt-impl]
-    end
-
-    Bootstrap -->|打包| HTTP
-    Bootstrap -->|打包| Consumer
-    Bootstrap -->|打包| AppImpl
-    Bootstrap -->|打包| DomainImpl
-    Bootstrap -->|打包| MySQL
-    Bootstrap -->|打包| Redis
-    Bootstrap -->|打包| SQS
-    Bootstrap -->|打包| JWT
-
-    style Bootstrap fill:#f9f,stroke:#333,stroke-width:2px
+    AppImpl[application-impl] -.->|implements| AppAPI[application-api]
+    DomainImpl[domain-impl] -.->|implements| DomainAPI[domain-api]
+    MySQL[mysql-impl] -.->|implements| RepoAPI[repository-api]
+    JWT[jwt-impl] -.->|implements| SecurityAPI[security-api]
+    Redis[redis-impl] -.->|implements| CacheAPI[cache-api]
 ```
 
 ---
@@ -145,11 +84,10 @@ graph TD
 
 | 原则 | 说明 |
 |------|------|
-| **Interface → Application** | 控制器只调用 Application Service 接口 |
-| **Application → Domain** | 应用服务只调用 Domain Service 接口，**不直接依赖 Repository** |
-| **Domain → Port** | 领域服务通过 Port 接口（repository-api 等）访问基础设施 |
+| **Interface → Application** | Controller 只调用 Application Service 接口 |
+| **Application → Domain** | 应用服务只调用 Domain Service 接口，不直接依赖 Repository |
+| **Domain → Port** | 领域服务通过 Port 接口访问基础设施 |
 | **Infrastructure → Port** | 基础设施模块实现 Port 接口，依赖反转 |
-| **Bootstrap 组装** | 启动模块汇聚所有实现，由 Spring 完成依赖注入 |
 
 ---
 
@@ -157,22 +95,34 @@ graph TD
 
 ```bash
 # 1. 启动 MySQL
-docker run -d --name mysql-8.4.8 -p 3307:3306 \
+docker run -d --name mysql-8.4.8 -p 3306:3306 \
   -e MYSQL_ROOT_PASSWORD=root mysql:8.4.8
 
 # 2. 创建数据库
 docker exec mysql-8.4.8 mysql -uroot -proot \
   -e "CREATE DATABASE awsome_shop_auth DEFAULT CHARACTER SET utf8mb4;"
 
-# 3. 编译 & 安装
+# 3. 编译
 mvn clean install -DskipTests
 
-# 4. 启动应用
-mvn spring-boot:run -pl bootstrap
+# 4. 启动 (Flyway 自动建表 + 种子数据)
+mvn spring-boot:run -pl bootstrap -Dspring-boot.run.profiles=local
 
 # 5. 访问 Swagger
-open http://localhost:8081/swagger-ui.html
+open http://localhost:8001/swagger-ui.html
 ```
+
+### 默认管理员账号
+
+| 用户名 | 密码 | 角色 |
+|--------|------|------|
+| admin | admin123 | ADMIN |
+
+---
+
+## 架构文档
+
+详见 [docs/architecture.md](docs/architecture.md)
 
 ---
 
@@ -181,10 +131,11 @@ open http://localhost:8081/swagger-ui.html
 | 技术 | 版本 | 用途 |
 |------|------|------|
 | Java | 21 | 运行时 |
-| Spring Boot | 3.4.1 | 应用框架 |
+| Spring Boot | 3.4.1 | 应用框架 (Servlet/MVC) |
 | MyBatis-Plus | 3.5.7 | ORM |
+| JJWT | 0.12.3 | JWT 签发与验证 |
+| spring-security-crypto | - | bcrypt 密码加密 |
 | Flyway | - | 数据库迁移 |
 | SpringDoc | 2.7.0 | API 文档 |
 | Redis | - | 缓存 |
-| AWS SQS | - | 消息队列 |
 | Lombok | - | 代码简化 |
