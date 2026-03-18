@@ -45,11 +45,11 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         long total = userDomainService.countByKeyword(request.getKeyword());
 
         PageResult<UserDTO> result = new PageResult<>();
-        result.setCurrent(Long.valueOf(request.getPage()));
+        result.setCurrentPage(Long.valueOf(request.getPage()));
         result.setSize(Long.valueOf(request.getSize()));
-        result.setTotal(total);
-        result.setPages((total + request.getSize() - 1) / request.getSize());
-        result.setRecords(users.stream().map(this::toDTO).collect(Collectors.toList()));
+        result.setTotalElements(total);
+        result.setTotalPages((total + request.getSize() - 1) / request.getSize());
+        result.setContent(users.stream().map(this::toDTO).collect(Collectors.toList()));
         return result;
     }
 

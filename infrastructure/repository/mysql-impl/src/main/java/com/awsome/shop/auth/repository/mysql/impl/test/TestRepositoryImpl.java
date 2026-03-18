@@ -29,14 +29,14 @@ public class TestRepositoryImpl implements TestRepository {
 
     @Override
     public PageResult<TestEntity> page(int page, int size, String name) {
-        IPage<TestPO> result = testMapper.selectPage(new Page<>(page, size), name);
+        IPage<TestPO> result = testMapper.selectPage(new Page<>(page + 1, size), name);
 
         PageResult<TestEntity> pageResult = new PageResult<>();
-        pageResult.setCurrent(result.getCurrent());
+        pageResult.setCurrentPage(result.getCurrent() - 1);
         pageResult.setSize(result.getSize());
-        pageResult.setTotal(result.getTotal());
-        pageResult.setPages(result.getPages());
-        pageResult.setRecords(result.getRecords().stream().map(this::toEntity).collect(Collectors.toList()));
+        pageResult.setTotalElements(result.getTotal());
+        pageResult.setTotalPages(result.getPages());
+        pageResult.setContent(result.getRecords().stream().map(this::toEntity).collect(Collectors.toList()));
         return pageResult;
     }
 

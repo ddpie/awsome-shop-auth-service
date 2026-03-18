@@ -10,8 +10,8 @@ import lombok.Data;
 @Data
 public class ListUserRequest {
 
-    @Min(value = 1, message = "页码最小为 1")
-    private Integer page = 1;
+    @Min(value = 0, message = "页码最小为 0")
+    private Integer page = 0;
 
     @Min(value = 1, message = "每页大小最小为 1")
     @Max(value = 100, message = "每页大小最大为 100")

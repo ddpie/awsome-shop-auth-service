@@ -17,9 +17,9 @@ public class PageResult<T> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 当前页码（从 1 开始）
+     * 当前页码（从 0 开始）
      */
-    private Long current;
+    private Long currentPage;
 
     /**
      * 每页记录数
@@ -29,17 +29,17 @@ public class PageResult<T> implements Serializable {
     /**
      * 总记录数
      */
-    private Long total;
+    private Long totalElements;
 
     /**
      * 总页数
      */
-    private Long pages;
+    private Long totalPages;
 
     /**
      * 当前页数据列表
      */
-    private List<T> records;
+    private List<T> content;
 
     /**
      * 类型转换方法
@@ -49,16 +49,16 @@ public class PageResult<T> implements Serializable {
      * @return 转换后的分页结果
      */
     public <R> PageResult<R> convert(Function<T, R> converter) {
-        List<R> convertedRecords = records.stream()
+        List<R> convertedRecords = content.stream()
                 .map(converter)
                 .collect(Collectors.toList());
 
         PageResult<R> result = new PageResult<>();
-        result.setCurrent(this.current);
+        result.setCurrentPage(this.currentPage);
         result.setSize(this.size);
-        result.setTotal(this.total);
-        result.setPages(this.pages);
-        result.setRecords(convertedRecords);
+        result.setTotalElements(this.totalElements);
+        result.setTotalPages(this.totalPages);
+        result.setContent(convertedRecords);
         return result;
     }
 }

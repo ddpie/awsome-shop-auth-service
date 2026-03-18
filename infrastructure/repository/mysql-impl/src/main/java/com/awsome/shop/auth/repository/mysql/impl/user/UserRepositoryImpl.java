@@ -79,7 +79,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<UserEntity> findByPage(String keyword, int page, int size) {
-        IPage<UserPO> result = userMapper.selectPageByKeyword(new Page<>(page, size), keyword);
+        IPage<UserPO> result = userMapper.selectPageByKeyword(new Page<>(page + 1, size), keyword);
         return result.getRecords().stream().map(this::toEntity).collect(Collectors.toList());
     }
 

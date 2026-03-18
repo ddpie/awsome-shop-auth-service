@@ -75,33 +75,33 @@ class UserApplicationServiceImplTest {
 
     @Test
     void listUsers_returnsPaginatedResult() {
-        when(userDomainService.listByPage(null, 1, 10)).thenReturn(List.of(user));
+        when(userDomainService.listByPage(null, 0, 10)).thenReturn(List.of(user));
         when(userDomainService.countByKeyword(null)).thenReturn(1L);
 
         ListUserRequest request = new ListUserRequest();
-        request.setPage(1);
+        request.setPage(0);
         request.setSize(10);
 
         PageResult<UserDTO> result = userApplicationService.listUsers(request);
 
-        assertThat(result.getRecords()).hasSize(1);
-        assertThat(result.getTotal()).isEqualTo(1L);
-        assertThat(result.getPages()).isEqualTo(1L);
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getTotalElements()).isEqualTo(1L);
+        assertThat(result.getTotalPages()).isEqualTo(1L);
     }
 
     @Test
     void listUsers_pagesCalculation() {
-        when(userDomainService.listByPage(null, 1, 2)).thenReturn(List.of(user));
+        when(userDomainService.listByPage(null, 0, 2)).thenReturn(List.of(user));
         when(userDomainService.countByKeyword(null)).thenReturn(5L);
 
         ListUserRequest request = new ListUserRequest();
-        request.setPage(1);
+        request.setPage(0);
         request.setSize(2);
 
         PageResult<UserDTO> result = userApplicationService.listUsers(request);
 
         // 5 条数据 / 每页 2 条 = 3 页
-        assertThat(result.getPages()).isEqualTo(3L);
+        assertThat(result.getTotalPages()).isEqualTo(3L);
     }
 
     // ==================== updateUser ====================

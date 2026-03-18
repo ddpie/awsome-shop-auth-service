@@ -17,9 +17,9 @@ import jakarta.validation.constraints.Min;
 @Schema(description = "分页请求基类")
 public abstract class PageableRequest implements GatewayInjectableRequest {
 
-    @Schema(description = "页码（从 1 开始）", example = "1", minimum = "1")
-    @Min(value = 1, message = "页码最小为 1")
-    private Integer page = 1;
+    @Schema(description = "页码（从 0 开始）", example = "0", minimum = "0")
+    @Min(value = 0, message = "页码最小为 0")
+    private Integer page = 0;
 
     @Schema(description = "每页大小", example = "20", minimum = "1", maximum = "100")
     @Min(value = 1, message = "每页大小最小为 1")
