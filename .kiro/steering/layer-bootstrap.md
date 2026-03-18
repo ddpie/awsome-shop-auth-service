@@ -17,12 +17,16 @@ fileMatchPattern: "bootstrap/**"
 
 ## 配置文件
 - `application.yml` — 所有环境共享的基础配置
-- `application-{profile}.yml` — 环境特定配置覆盖
-- 可用 profile：`local`（默认）、`dev`、`docker`、`staging`、`prod`、`test`
+- `application-local.yml` — 本地开发（MySQL localhost:3306，端口 8001）
+- `application-docker.yml` — Docker 部署（MySQL docker DNS，Redis docker DNS）
+- 自定义配置项：`security.jwt.*`（secret、expiration、issuer）、`security.login.*`（max-failed-attempts、lock-duration）、`shop.security.encryption.key`
 
 ## 数据库迁移（Flyway）
 - 脚本路径：`src/main/resources/db/migration/`
 - 命名规范：`V{版本号}__{描述}.sql`（双下划线分隔）
+- 现有脚本：
+  - `V1__create_sample_table.sql` — 示例表
+  - `V2__create_users_table.sql` — 用户表 + admin 种子数据（admin/admin123）
 - 表规范：
   - 引擎：`InnoDB`，字符集：`utf8mb4`，排序：`utf8mb4_unicode_ci`
   - 必须字段：`id`（BIGINT AUTO_INCREMENT PK）、`created_at`、`updated_at`、`created_by`、`updated_by`、`deleted`（TINYINT DEFAULT 0）、`version`（INT DEFAULT 0）
