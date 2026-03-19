@@ -6,6 +6,7 @@ import com.awsome.shop.auth.application.api.dto.auth.request.LoginRequest;
 import com.awsome.shop.auth.application.api.dto.auth.request.RegisterRequest;
 import com.awsome.shop.auth.application.api.dto.auth.request.ValidateTokenRequest;
 import com.awsome.shop.auth.application.api.dto.user.UserDTO;
+import com.awsome.shop.auth.application.api.client.PointsServiceClient;
 import com.awsome.shop.auth.application.api.service.auth.AuthApplicationService;
 import com.awsome.shop.auth.domain.model.user.UserEntity;
 import com.awsome.shop.auth.domain.service.auth.AuthDomainService;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class AuthApplicationServiceImpl implements AuthApplicationService {
 
     private final AuthDomainService authDomainService;
+    private final PointsServiceClient pointsServiceClient;
 
     @Override
     public UserDTO register(RegisterRequest request) {
@@ -65,9 +67,10 @@ public class AuthApplicationServiceImpl implements AuthApplicationService {
         return ValidateTokenDTO.success(userId, role);
     }
 
+    private static final int INITIAL_POINTS = 10000;
+
     private void initUserPoints(Long userId) {
-        // TODO: 调用积分服务初始化用户积分（points-service），当前为桩实现
-        log.info("积分初始化（桩实现），用户ID: {}", userId);
+        pointsServiceClient.initPoints(userId, INITIAL_POINTS);
     }
 
     private UserDTO toDTO(UserEntity entity) {

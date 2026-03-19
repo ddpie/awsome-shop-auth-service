@@ -31,6 +31,28 @@ public class PointsServiceClientImpl implements PointsServiceClient {
     }
 
     @Override
+    public void initPoints(Long userId, int initialBalance) {
+        String url = pointsServiceUrl + "/api/v1/internal/point/init";
+        Map<String, Object> body = Map.of("userId", userId, "initialBalance", initialBalance);
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+
+            if (responseBody == null || !"SUCCESS".equals(responseBody.get("code"))) {
+                log.warn("[PointsClient] 初始化积分失败, userId={}, response={}", userId, responseBody);
+            } else {
+                log.info("[PointsClient] 初始化积分成功, userId={}, balance={}", userId, initialBalance);
+            }
+        } catch (Exception e) {
+            log.error("[PointsClient] 初始化积分异常, userId={}", userId, e);
+        }
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public Integer getBalance(Long userId) {
         String url = pointsServiceUrl + "/api/v1/internal/point/balance";
