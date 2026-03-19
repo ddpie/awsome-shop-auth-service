@@ -88,6 +88,13 @@ security:
     # 账号锁定时长 (单位: 秒，30分钟 = 1800秒)
     lock-duration: 1800
 
+# 跨服务调用配置
+service:
+  points:
+    url: http://localhost:8003
+  connect-timeout: 2000
+  read-timeout: 3000
+
 # Shop 配置
 shop:
   security:

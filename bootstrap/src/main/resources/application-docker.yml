@@ -45,6 +45,13 @@ mybatis-plus:
     db-config:
       banner: false
 
+# 跨服务调用配置
+service:
+  points:
+    url: http://points:8003
+  connect-timeout: 2000
+  read-timeout: 3000
+
 # Security 配置
 security:
   jwt:

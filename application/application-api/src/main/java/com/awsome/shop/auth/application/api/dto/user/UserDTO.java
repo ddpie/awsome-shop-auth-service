@@ -16,6 +16,7 @@ public class UserDTO {
     private String employeeId;
     private String role;
     private String status;
+    private Integer pointBalance;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

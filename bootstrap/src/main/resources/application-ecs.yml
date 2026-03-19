@@ -39,6 +39,13 @@ mybatis-plus:
     db-config:
       banner: false
 
+# 跨服务调用配置 (Copilot Service Connect DNS)
+service:
+  points:
+    url: http://points.dev.awsome-shop.local:8003
+  connect-timeout: 2000
+  read-timeout: 3000
+
 security:
   jwt:
     secret: ${JWT_SECRET}
