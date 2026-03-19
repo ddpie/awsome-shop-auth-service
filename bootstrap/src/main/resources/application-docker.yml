@@ -48,7 +48,7 @@ mybatis-plus:
 # 跨服务调用配置
 service:
   points:
-    url: http://points:8003
+    url: http://points-service:8003
   connect-timeout: 2000
   read-timeout: 3000
 
